@@ -6,9 +6,12 @@ from io import BytesIO
 def extract_texts(pdf_path):
     doc = fitz.open(pdf_path)
     texts = []
+
     for i, page in enumerate(doc):
         pix = page.get_pixmap(dpi=300)
         img = Image.open(BytesIO(pix.tobytes("png")))
         text = pytesseract.image_to_string(img)
         texts.append(text)
+        print(f"[OCR] Page {i+1} text length: {len(text)} chars")
+
     return texts

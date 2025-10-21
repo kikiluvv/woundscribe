@@ -1,4 +1,6 @@
-import json, os, datetime
+import json
+import os
+import datetime
 
 DB_PATH = "data/patient_map.json"
 
@@ -14,7 +16,6 @@ def save_db(db):
         json.dump(db, f, indent=2)
 
 def get_clinic(db, name):
-    """Return clinic for a patient, or create placeholder if missing."""
     if name not in db:
         db[name] = {
             "clinic": "UnknownClinic",
