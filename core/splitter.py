@@ -12,24 +12,28 @@ def sanitize_filename(name: str) -> str:
 def clean_ocr_name(raw_name: str) -> str:
     """
     Trim trailing OCR junk (like 'Age', room numbers, etc.)
-    Capture 'Last, First' and optional nickname.
+    Capture 'Last, First' pattern only.
+    Returns normalized 'First Last' for DB lookup.
     """
-    match = re.search(r'([A-Z][a-z]+),\s*(?:“.*?”\s*)?([A-Z][a-z]+)', raw_name)
+    # match only letters for last and first
+    match = re.match(r'([A-Z][a-z]+),\s*(?:“.*?”\s*)?([A-Z][a-z]+)', raw_name)
     if match:
         last, first = match.groups()
-        return f"{first} {last}"  # normalized to DB key
-    return raw_name.strip()
+        return f"{first} {last}"  # normalized DB key
+    # fallback: just remove common junk words
+    return re.sub(r'\b(Age|DOB|Room|#)\b.*', '', raw_name, flags=re.I).strip()
 
 def extract_filename(raw_name: str) -> str:
     """
-    Create a clean filename from OCR name.
     Converts 'Last, First' → 'Last_First', removes illegal chars.
     """
-    match = re.search(r'([A-Z][a-z]+),\s*(?:“.*?”\s*)?([A-Z][a-z]+)', raw_name)
+    match = re.match(r'([A-Z][a-z]+),\s*(?:“.*?”\s*)?([A-Z][a-z]+)', raw_name)
     if match:
         last, first = match.groups()
         return sanitize_filename(f"{last}_{first}")
-    return sanitize_filename(raw_name)
+    # fallback: strip junk for filename too
+    clean_name = re.sub(r'\b(Age|DOB|Room|#)\b.*', '', raw_name, flags=re.I).strip()
+    return sanitize_filename(clean_name)
 
 def split_pdf(pdf_path, docs, output_dir, patient_db):
     src = fitz.open(pdf_path)
