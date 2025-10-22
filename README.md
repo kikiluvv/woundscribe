@@ -75,10 +75,14 @@ python woundscribe.py process wound.pdf -o ProcessedWounds
 
 **Workflow:**
 1. OCR Extraction: Converts each PDF page to text.
-2. Document Parsing: Detects patient sections using regex patterns like Resident Name: <Name>.
+2. Document Parsing: Detects patient sections using regex patterns like `Resident Name: <Name>`.
 3. Database Lookup: Normalizes names (First Last) and checks the JSON database for clinic assignments.
+   - **Fuzzy Matching**: If an exact match is not found, the program uses fuzzy matching to suggest possible matches with a similarity score. Matches with a score above 85% are flagged for review.
 4. PDF Splitting: Creates individual PDFs for each patient in a folder named after the clinic.
-5. Database Update: Adds any new patients to data/patient_map.json with clinic "UnknownClinic" by default.
+5. Database Update: Adds any new patients to `data/patient_map.json` with the clinic set to `UnknownClinic` by default.
+6. Interactive Review:
+   - **Unknown Patients**: Prompts the user to manually assign clinics to patients with `UnknownClinic`.
+   - **Fuzzy Matches**: Allows the user to review and resolve potential duplicate patient entries interactively.
 
 ---
 
@@ -109,6 +113,36 @@ Deletes a patient from the database.
 python woundscribe.py rename "Old Name" "New Name"
 ```
 Renames a patient in the database and updates the last-updated timestamp.
+
+---
+
+### Review Functions
+
+**Review Unknown Patients**
+```bash
+python woundscribe.py review
+```
+Launches an interactive review process for patients assigned to `UnknownClinic`. You can manually assign clinics during this process.
+
+**Review Fuzzy Matches**
+During the processing workflow, if fuzzy matches are detected, the program will prompt you to review and resolve potential duplicates interactively. You can choose to merge entries or skip them.
+
+---
+
+### Example Output
+
+**Fuzzy Match Example:**
+```
+🤔 Fuzzy match: 'John Doe' ≈ 'Jon Doe' (87%)
+```
+You will be prompted to confirm if the match is correct and merge the entries if needed.
+
+**Unknown Patient Example:**
+```
+🤔 Unknown patient: 'Jane Smith'
+Assign a clinic (or press Enter to skip): Valley View
+✅ Assigned Jane Smith → Valley View
+```
 
 ---
 
